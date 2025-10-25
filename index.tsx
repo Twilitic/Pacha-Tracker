@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { createRoot } from 'react-dom/client';
 
 // === HELPER HOOK for LOCALSTORAGE ===
@@ -7,8 +7,8 @@ function useLocalStorage(key, initialValue) {
     try {
       const item = window.localStorage.getItem(key);
       return item ? JSON.parse(item) : initialValue;
-    } catch (error) {
-      console.error(error);
+    } catch (error)
+      {console.error(error);
       return initialValue;
     }
   });
@@ -26,6 +26,84 @@ function useLocalStorage(key, initialValue) {
   return [storedValue, setValue];
 }
 
+// === NEW HELPER COMPONENTS & FUNCTIONS ===
+
+const getAnimalStyle = (animalName) => {
+    const styles = {
+      // Aurochs
+      'Golden Aurochs': { background: 'linear-gradient(135deg, #FFD700, #F0C400)' },
+      'Snow Aurochs': { background: 'linear-gradient(135deg, #E6F7FF, #B0E0E6)' },
+      'Flame Aurochs': { background: 'linear-gradient(135deg, #FF4500, #FF8C00, #FFD700)' },
+      // Bison
+      'Golden Bison': { background: 'linear-gradient(135deg, #FFD700, #DAA520)' },
+      'Chicle Bison': { background: 'linear-gradient(135deg, #E6739F, #3D2B56)' }, // Updated: Pink/Purple
+      'Sky Cloud Bison': { background: 'linear-gradient(135deg, #87CEEB, #FFFFFF)' },
+      // Guanaco
+      'Golden Guanaco': { background: 'linear-gradient(135deg, #FFD700, #B8860B)' },
+      'Fiery Guanaco': { background: 'linear-gradient(135deg, #B22222, #FF4500)' },
+      'Icy Guanaco': { background: 'linear-gradient(135deg, #ADD8E6, #F0FFFF)' },
+      // Horse
+      'Golden Steppe Horse': { background: 'linear-gradient(135deg, #FFD700, #CD853F)' },
+      'Cloudy Day Steppe Horse': { background: 'linear-gradient(135deg, #D3D3D3, #A9A9A9)' },
+      'Starry Night Steppe Horse': {  // Updated: Star pattern
+         background: `
+            radial-gradient(circle, #99d9f9 1px, rgba(0,0,0,0) 1px),
+            radial-gradient(circle, #99d9f9 1px, rgba(0,0,0,0) 1px),
+            linear-gradient(135deg, #0a0a23 0%, #1c3a6b 100%)
+          `,
+          backgroundSize: '20px 20px, 20px 20px, 100% 100%',
+          backgroundPosition: '0 0, 10px 10px, 0 0'
+      },
+      // Ibex
+      'Golden Ibex': { background: 'linear-gradient(135deg, #FFD700, #EEAD0E)' },
+      'Shallow Waters Ibex': { background: 'linear-gradient(135deg, #20B2AA, #5F9EA0)' },
+      'Spider Ibex': { background: 'radial-gradient(circle, #B22222 30%, #000000 100%)' },
+      // Junglefowl
+      'Golden Junglefowl': { background: 'linear-gradient(135deg, #FFD700, #FFBF00)' },
+      'Amethyst Junglefowl': { background: 'linear-gradient(135deg, #9966CC, #8A2BE2)' },
+      'Grand Turquoise Junglefowl': { background: 'linear-gradient(135deg, #40E0D0, #00CED1)' },
+      // Ostrich
+      'Golden Ostrich': { background: 'linear-gradient(135deg, #FFD700, #F0E68C)' },
+      'Sapphire Ostrich': { background: 'linear-gradient(135deg, #20B2AA, #48D1CC)' }, // Updated: Brighter blue/turquoise
+      'Rainbow Ostrich': { background: 'linear-gradient(90deg, #FF0000, #FF7F00, #FFFF00, #00FF00, #0000FF, #4B0082, #8B00FF)' },
+      // Wild Boar
+      'Golden Wild Boar': { background: 'linear-gradient(135deg, #FFD700, #D2B48C)' },
+      'Fiber Wild Boar': { background: 'repeating-linear-gradient(45deg, #556B2F, #556B2F 10px, #6B8E23 10px, #6B8E23 20px)' }, // Updated: Green
+      'Fire Wild Boar': { background: 'linear-gradient(135deg, #DC143C, #FF4500, #000000)' },
+    };
+    return styles[animalName] || { background: 'var(--bg-tertiary)' };
+};
+
+const AnimalColorSwatch = ({ animal }) => {
+  const style = getAnimalStyle(animal.name);
+  return <div className="animal-color-swatch" style={style} title={animal.name}></div>;
+};
+
+const NumberStepper = ({ value, onChange, min = 0 }) => {
+  const handleIncrement = () => onChange(value + 1);
+  const handleDecrement = () => onChange(Math.max(min, value - 1));
+  const handleChange = (e) => {
+    const newValue = parseInt(e.target.value, 10);
+    if (!isNaN(newValue)) {
+      onChange(Math.max(min, newValue));
+    } else if (e.target.value === '') {
+      onChange(min);
+    }
+  };
+
+  return (
+    <div className="number-stepper">
+      <button onClick={handleDecrement} className="stepper-btn" aria-label="Decrement">-</button>
+      <input 
+        type="number" 
+        min={min}
+        value={value}
+        onChange={handleChange}
+      />
+      <button onClick={handleIncrement} className="stepper-btn" aria-label="Increment">+</button>
+    </div>
+  );
+};
 
 const App = () => {
   // === DATA ===
@@ -35,30 +113,30 @@ const App = () => {
   const ANIMAL_SPECIES = ['Aurochs', 'Bison', 'Guanaco', 'Horse', 'Ibex', 'Junglefowl', 'Ostrich', 'Wild Boar'];
   
   const ANIMAL_DATA = [
-      { name: 'Golden Aurochs', species: 'Aurochs', rarity: 'Golden', seasons: ['Spring', 'Fall'], days: [7, 21], minYear: 1, imageUrl: 'https://static.wikia.nocookie.net/roots_of_pacha/images/e/eb/Aurochs_Golden.png/revision/latest?cb=20231210040816', spawnLocation: 'Savanna', unlockReqs: { colors: 4, total: 8 } },
-      { name: 'Snow Aurochs', species: 'Aurochs', rarity: 'Rare', seasons: ['Summer', 'Winter'], days: [14, 28], minYear: 1, imageUrl: 'https://static.wikia.nocookie.net/roots_of_pacha/images/e/eb/Aurochs_Snow.png/revision/latest?cb=20231210040044', spawnLocation: 'Savanna', unlockReqs: { colors: 4, total: 8 } },
-      { name: 'Flame Aurochs', species: 'Aurochs', rarity: 'Legendary', seasons: ['Summer', 'Winter'], days: [10], minYear: 2, imageUrl: 'https://static.wikia.nocookie.net/roots_of_pacha/images/a/a6/Aurochs_Flame.png/revision/latest?cb=20231210040744', spawnLocation: 'Savanna', unlockReqs: { colors: 6, total: 12 } },
-      { name: 'Golden Bison', species: 'Bison', rarity: 'Golden', seasons: ['Summer', 'Winter'], days: [3, 17], minYear: 1, imageUrl: 'https://static.wikia.nocookie.net/roots_of_pacha/images/2/25/Golden_Bison.png/revision/latest?cb=20230506182836', spawnLocation: 'Savanna', unlockReqs: { colors: 4, total: 8 } },
-      { name: 'Chicle Bison', species: 'Bison', rarity: 'Rare', seasons: ['Spring', 'Fall'], days: [10, 24], minYear: 1, imageUrl: 'https://static.wikia.nocookie.net/roots_of_pacha/images/1/19/Chicle_Bison.png/revision/latest?cb=20230519013735', spawnLocation: 'Savanna', unlockReqs: { colors: 4, total: 8 } },
-      { name: 'Sky Cloud Bison', species: 'Bison', rarity: 'Legendary', seasons: ['Summer', 'Winter'], days: [22], minYear: 2, imageUrl: 'https://static.wikia.nocookie.net/roots_of_pacha/images/d/d3/Sky_Cloud_Bison.png/revision/latest?cb=20230523121819', spawnLocation: 'Savanna', unlockReqs: { colors: 6, total: 12 } },
-      { name: 'Golden Guanaco', species: 'Guanaco', rarity: 'Golden', seasons: ['Summer', 'Winter'], days: [5, 19], minYear: 1, imageUrl: 'https://static.wikia.nocookie.net/roots_of_pacha/images/8/84/Golden_Guanaco.png/revision/latest?cb=20230524035717', spawnLocation: 'Savanna', unlockReqs: { colors: 4, total: 8 } },
-      { name: 'Fiery Guanaco', species: 'Guanaco', rarity: 'Rare', seasons: ['Spring', 'Fall'], days: [12, 26], minYear: 1, imageUrl: 'https://static.wikia.nocookie.net/roots_of_pacha/images/b/b0/Fiery_Guanaco.png/revision/latest?cb=20230524035234', spawnLocation: 'Savanna', unlockReqs: { colors: 4, total: 8 } },
-      { name: 'Icy Guanaco', species: 'Guanaco', rarity: 'Legendary', seasons: ['Spring', 'Fall'], days: [2], minYear: 2, imageUrl: 'https://static.wikia.nocookie.net/roots_of_pacha/images/c/cf/Icy_Guanaco.png/revision/latest?cb=20230524035718', spawnLocation: 'Savanna', unlockReqs: { colors: 6, total: 12 } },
-      { name: 'Golden Steppe Horse', species: 'Horse', rarity: 'Golden', seasons: ['Summer', 'Winter'], days: [7, 21], minYear: 1, imageUrl: 'https://static.wikia.nocookie.net/roots_of_pacha/images/2/27/Golden_Steppe_Horse.png/revision/latest?cb=20230508201208', spawnLocation: 'Caves', unlockReqs: { colors: 4, total: 8 } },
-      { name: 'Cloudy Day Steppe Horse', species: 'Horse', rarity: 'Rare', seasons: ['Spring', 'Fall'], days: [14, 28], minYear: 1, imageUrl: 'https://static.wikia.nocookie.net/roots_of_pacha/images/2/2c/Cloudy_Day_Steppe_Horse.png/revision/latest?cb=20230508192728', spawnLocation: 'Caves', unlockReqs: { colors: 4, total: 8 } },
-      { name: 'Starry Night Steppe Horse', species: 'Horse', rarity: 'Legendary', seasons: ['Spring', 'Fall'], days: [18], minYear: 2, imageUrl: 'https://static.wikia.nocookie.net/roots_of_pacha/images/8/84/Starry_Night_Steppe_Horse.png/revision/latest?cb=20230508192512', spawnLocation: 'Caves', unlockReqs: { colors: 6, total: 12 } },
-      { name: 'Golden Ibex', species: 'Ibex', rarity: 'Golden', seasons: ['Spring', 'Fall'], days: [2, 16], minYear: 1, imageUrl: 'https://static.wikia.nocookie.net/roots_of_pacha/images/a/aa/Golden_Ibex.png/revision/latest?cb=20230507093544', spawnLocation: 'Forest', unlockReqs: { colors: 4, total: 8 } },
-      { name: 'Shallow Waters Ibex', species: 'Ibex', rarity: 'Rare', seasons: ['Summer', 'Winter'], days: [9, 23], minYear: 1, imageUrl: 'https://static.wikia.nocookie.net/roots_of_pacha/images/8/83/Shallow_Waters_Ibex.png/revision/latest?cb=20230507093544', spawnLocation: 'Forest', unlockReqs: { colors: 4, total: 8 } },
-      { name: 'Spider Ibex', species: 'Ibex', rarity: 'Legendary', seasons: ['Spring', 'Fall'], days: [26], minYear: 2, imageUrl: 'https://static.wikia.nocookie.net/roots_of_pacha/images/3/31/Spider_Ibex.png/revision/latest?cb=20230507093544', spawnLocation: 'Forest', unlockReqs: { colors: 6, total: 12 } },
-      { name: 'Golden Junglefowl', species: 'Junglefowl', rarity: 'Golden', seasons: ['Spring', 'Fall'], days: [6, 20], minYear: 1, imageUrl: 'https://static.wikia.nocookie.net/roots_of_pacha/images/e/ea/Golden_Junglefowl.png/revision/latest?cb=20230524100048', spawnLocation: 'Jungle', unlockReqs: { colors: 4, total: 8 } },
-      { name: 'Amethyst Junglefowl', species: 'Junglefowl', rarity: 'Rare', seasons: ['Summer', 'Winter'], days: [13, 27], minYear: 1, imageUrl: 'https://static.wikia.nocookie.net/roots_of_pacha/images/a/aa/Amethyst_Junglefowl.png/revision/latest?cb=20230524095653', spawnLocation: 'Jungle', unlockReqs: { colors: 4, total: 8 } },
-      { name: 'Grand Turquoise Junglefowl', species: 'Junglefowl', rarity: 'Legendary', seasons: ['Spring', 'Fall'], days: [10], minYear: 2, imageUrl: 'https://static.wikia.nocookie.net/roots_of_pacha/images/0/09/Grand_Turquoise_Junglefowl.png/revision/latest?cb=20230524100048', spawnLocation: 'Jungle', unlockReqs: { colors: 6, total: 12 } },
-      { name: 'Golden Ostrich', species: 'Ostrich', rarity: 'Golden', seasons: ['Spring', 'Fall'], days: [4, 18], minYear: 1, imageUrl: 'https://static.wikia.nocookie.net/roots_of_pacha/images/1/19/Golden_Ostrich.png/revision/latest?cb=20230507200701', spawnLocation: 'Savanna', unlockReqs: { colors: 4, total: 8 } },
-      { name: 'Sapphire Ostrich', species: 'Ostrich', rarity: 'Rare', seasons: ['Summer', 'Winter'], days: [11, 25], minYear: 1, imageUrl: 'https://static.wikia.nocookie.net/roots_of_pacha/images/d/d6/Sapphire_Ostrich.png/revision/latest?cb=20230506205846', spawnLocation: 'Savanna', unlockReqs: { colors: 4, total: 8 } },
-      { name: 'Rainbow Ostrich', species: 'Ostrich', rarity: 'Legendary', seasons: ['Summer', 'Winter'], days: [14], minYear: 2, imageUrl: 'https://static.wikia.nocookie.net/roots_of_pacha/images/8/8c/Rainbow_Ostrich.png/revision/latest?cb=20230508191157', spawnLocation: 'Savanna', unlockReqs: { colors: 6, total: 12 } },
-      { name: 'Golden Wild Boar', species: 'Wild Boar', rarity: 'Golden', seasons: ['Summer', 'Winter'], days: [1, 15], minYear: 1, imageUrl: 'https://static.wikia.nocookie.net/roots_of_pacha/images/7/77/Golden_Wild_Boar.png/revision/latest?cb=20230507134347', spawnLocation: 'Forest', unlockReqs: { colors: 4, total: 8 } },
-      { name: 'Fiber Wild Boar', species: 'Wild Boar', rarity: 'Rare', seasons: ['Spring', 'Fall'], days: [8, 22], minYear: 1, imageUrl: 'https://static.wikia.nocookie.net/roots_of_pacha/images/c/ca/Fiber_Wild_Boar.png/revision/latest?cb=20230524062759', spawnLocation: 'Forest', unlockReqs: { colors: 4, total: 8 } },
-      { name: 'Fire Wild Boar', species: 'Wild Boar', rarity: 'Legendary', seasons: ['Summer', 'Winter'], days: [6], minYear: 2, imageUrl: 'https://static.wikia.nocookie.net/roots_of_pacha/images/c/ca/Fire_Wild_Boar.png/revision/latest?cb=20230524062759', spawnLocation: 'Forest', unlockReqs: { colors: 6, total: 12 } },
+      { name: 'Golden Aurochs', species: 'Aurochs', rarity: 'Golden', seasons: ['Spring', 'Fall'], days: [7, 21], minYear: 1, spawnLocation: 'Savanna', unlockReqs: { colors: 4, total: 8 } },
+      { name: 'Snow Aurochs', species: 'Aurochs', rarity: 'Rare', seasons: ['Summer', 'Winter'], days: [14, 28], minYear: 1, spawnLocation: 'Savanna', unlockReqs: { colors: 4, total: 8 } },
+      { name: 'Flame Aurochs', species: 'Aurochs', rarity: 'Legendary', seasons: ['Summer', 'Winter'], days: [10], minYear: 2, spawnLocation: 'Savanna', unlockReqs: { colors: 6, total: 12 } },
+      { name: 'Golden Bison', species: 'Bison', rarity: 'Golden', seasons: ['Summer', 'Winter'], days: [3, 17], minYear: 1, spawnLocation: 'Savanna', unlockReqs: { colors: 4, total: 8 } },
+      { name: 'Chicle Bison', species: 'Bison', rarity: 'Rare', seasons: ['Spring', 'Fall'], days: [10, 24], minYear: 1, spawnLocation: 'Savanna', unlockReqs: { colors: 4, total: 8 } },
+      { name: 'Sky Cloud Bison', species: 'Bison', rarity: 'Legendary', seasons: ['Summer', 'Winter'], days: [22], minYear: 2, spawnLocation: 'Savanna', unlockReqs: { colors: 6, total: 12 } },
+      { name: 'Golden Guanaco', species: 'Guanaco', rarity: 'Golden', seasons: ['Summer', 'Winter'], days: [5, 19], minYear: 1, spawnLocation: 'Savanna', unlockReqs: { colors: 4, total: 8 } },
+      { name: 'Fiery Guanaco', species: 'Guanaco', rarity: 'Rare', seasons: ['Spring', 'Fall'], days: [12, 26], minYear: 1, spawnLocation: 'Savanna', unlockReqs: { colors: 4, total: 8 } },
+      { name: 'Icy Guanaco', species: 'Guanaco', rarity: 'Legendary', seasons: ['Spring', 'Fall'], days: [2], minYear: 2, spawnLocation: 'Savanna', unlockReqs: { colors: 6, total: 12 } },
+      { name: 'Golden Steppe Horse', species: 'Horse', rarity: 'Golden', seasons: ['Summer', 'Winter'], days: [7, 21], minYear: 1, spawnLocation: 'Caves', unlockReqs: { colors: 4, total: 8 } },
+      { name: 'Cloudy Day Steppe Horse', species: 'Horse', rarity: 'Rare', seasons: ['Spring', 'Fall'], days: [14, 28], minYear: 1, spawnLocation: 'Caves', unlockReqs: { colors: 4, total: 8 } },
+      { name: 'Starry Night Steppe Horse', species: 'Horse', rarity: 'Legendary', seasons: ['Spring', 'Fall'], days: [18], minYear: 2, spawnLocation: 'Caves', unlockReqs: { colors: 6, total: 12 } },
+      { name: 'Golden Ibex', species: 'Ibex', rarity: 'Golden', seasons: ['Spring', 'Fall'], days: [2, 16], minYear: 1, spawnLocation: 'Forest', unlockReqs: { colors: 4, total: 8 } },
+      { name: 'Shallow Waters Ibex', species: 'Ibex', rarity: 'Rare', seasons: ['Summer', 'Winter'], days: [9, 23], minYear: 1, spawnLocation: 'Forest', unlockReqs: { colors: 4, total: 8 } },
+      { name: 'Spider Ibex', species: 'Ibex', rarity: 'Legendary', seasons: ['Spring', 'Fall'], days: [26], minYear: 2, spawnLocation: 'Forest', unlockReqs: { colors: 6, total: 12 } },
+      { name: 'Golden Junglefowl', species: 'Junglefowl', rarity: 'Golden', seasons: ['Spring', 'Fall'], days: [6, 20], minYear: 1, spawnLocation: 'Jungle', unlockReqs: { colors: 4, total: 8 } },
+      { name: 'Amethyst Junglefowl', species: 'Junglefowl', rarity: 'Rare', seasons: ['Summer', 'Winter'], days: [13, 27], minYear: 1, spawnLocation: 'Jungle', unlockReqs: { colors: 4, total: 8 } },
+      { name: 'Grand Turquoise Junglefowl', species: 'Junglefowl', rarity: 'Legendary', seasons: ['Spring', 'Fall'], days: [10], minYear: 2, spawnLocation: 'Jungle', unlockReqs: { colors: 6, total: 12 } },
+      { name: 'Golden Ostrich', species: 'Ostrich', rarity: 'Golden', seasons: ['Spring', 'Fall'], days: [4, 18], minYear: 1, spawnLocation: 'Savanna', unlockReqs: { colors: 4, total: 8 } },
+      { name: 'Sapphire Ostrich', species: 'Ostrich', rarity: 'Rare', seasons: ['Summer', 'Winter'], days: [11, 25], minYear: 1, spawnLocation: 'Savanna', unlockReqs: { colors: 4, total: 8 } },
+      { name: 'Rainbow Ostrich', species: 'Ostrich', rarity: 'Legendary', seasons: ['Summer', 'Winter'], days: [14], minYear: 2, spawnLocation: 'Savanna', unlockReqs: { colors: 6, total: 12 } },
+      { name: 'Golden Wild Boar', species: 'Wild Boar', rarity: 'Golden', seasons: ['Summer', 'Winter'], days: [1, 15], minYear: 1, spawnLocation: 'Forest', unlockReqs: { colors: 4, total: 8 } },
+      { name: 'Fiber Wild Boar', species: 'Wild Boar', rarity: 'Rare', seasons: ['Spring', 'Fall'], days: [8, 22], minYear: 1, spawnLocation: 'Forest', unlockReqs: { colors: 4, total: 8 } },
+      { name: 'Fire Wild Boar', species: 'Wild Boar', rarity: 'Legendary', seasons: ['Summer', 'Winter'], days: [6], minYear: 2, spawnLocation: 'Forest', unlockReqs: { colors: 6, total: 12 } },
   ];
   
   const initialProgress = ANIMAL_SPECIES.reduce((acc, species) => {
@@ -69,6 +147,7 @@ const App = () => {
   // === STATE ===
   const [currentDate, setCurrentDate] = useLocalStorage('pacha_currentDate', { year: 1, seasonIndex: 0, day: 1 });
   const [tamingProgress, setTamingProgress] = useLocalStorage('pacha_tamingProgress', initialProgress);
+  const [obtainedAnimals, setObtainedAnimals] = useLocalStorage('pacha_obtainedAnimals', []);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [selectedAnimal, setSelectedAnimal] = useState(null);
   const [filters, setFilters] = useState({
@@ -77,6 +156,7 @@ const App = () => {
     unlockedOnly: false,
     year: 'all'
   });
+  const importInputRef = useRef(null);
 
   // === LOGIC ===
   const isUnlocked = (animal) => {
@@ -156,20 +236,20 @@ const App = () => {
       });
   };
 
-
   const upcomingSpawns = useMemo(() => {
     const upcoming = [];
     let searchYear = currentDate.year;
     let searchSeasonIndex = currentDate.seasonIndex;
     let searchDay = currentDate.day;
 
-    while (upcoming.length < 5 && searchYear < 10) { // Limit search to 10 years to prevent infinite loops
+    while (upcoming.length < 5 && searchYear < 10) { 
         const seasonName = SEASONS[searchSeasonIndex];
         const spawnsOnDay = ANIMAL_DATA.filter(animal => 
             animal.seasons.includes(seasonName) && 
             animal.days.includes(searchDay) &&
             isUnlocked(animal) &&
-            searchYear >= animal.minYear
+            searchYear >= animal.minYear &&
+            !obtainedAnimals.includes(animal.name) // Check against all obtained animals
         );
 
         if (spawnsOnDay.length > 0) {
@@ -191,7 +271,7 @@ const App = () => {
         }
     }
     return upcoming;
-  }, [tamingProgress, currentDate]);
+  }, [tamingProgress, currentDate, obtainedAnimals]);
 
   const filteredSpawns = (day) => {
     let daySpawns = spawnsByDay[day] || [];
@@ -206,6 +286,50 @@ const App = () => {
       return rarityFilter && speciesFilter && unlockedFilter && yearFilter && minYearFilter;
     });
   }
+
+  const handleExport = () => {
+    const dataToExport = { currentDate, tamingProgress, obtainedAnimals };
+    const dataStr = JSON.stringify(dataToExport, null, 2);
+    const dataBlob = new Blob([dataStr], {type: "application/json"});
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `pacha_tracker_data_${new Date().toISOString().slice(0,10)}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleImport = (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        try {
+            if (typeof e.target.result !== 'string') {
+              throw new Error('File content is not a string');
+            }
+            const importedData = JSON.parse(e.target.result);
+            // Updated to check for obtainedAnimals
+            if (importedData.currentDate && importedData.tamingProgress && Array.isArray(importedData.obtainedAnimals)) {
+                setCurrentDate(importedData.currentDate);
+                setTamingProgress(importedData.tamingProgress);
+                setObtainedAnimals(importedData.obtainedAnimals);
+                alert('Data imported successfully!');
+                setIsSettingsOpen(false);
+            } else {
+                alert('Invalid data file. Make sure it is a valid export from the Pacha Tracker.');
+            }
+        } catch (error) {
+            console.error('Failed to parse imported file:', error);
+            alert('Error importing file. It might be corrupted or not in the correct format.');
+        }
+    };
+    reader.readAsText(file);
+    event.target.value = null;
+  };
 
   // === RENDER ===
   return (
@@ -222,8 +346,17 @@ const App = () => {
           --legendary-color: #f92672;
           --golden-color: #e6db74;
           --border-color: #555;
+          --success-color: #8aff8a;
           --font-family: 'Kumbh Sans', sans-serif;
           --shadow: 0 4px 12px rgba(0,0,0,0.4);
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes scaleUp {
+          from { transform: scale(0.95); opacity: 0; }
+          to { transform: scale(1); opacity: 1; }
         }
         body {
           font-family: var(--font-family);
@@ -315,11 +448,26 @@ const App = () => {
           border-radius: 4px;
           font-size: 0.8rem;
           cursor: pointer;
-          transition: transform 0.2s;
+          transition: transform 0.2s, background-color 0.2s;
         }
         .animal-spawn:hover { transform: scale(1.05); }
         .animal-spawn.locked { opacity: 0.4; filter: grayscale(80%); }
-        .animal-spawn img { width: 24px; height: 24px; object-fit: contain; }
+
+        .animal-spawn.obtained {
+          background-color: rgba(60, 140, 60, 0.2);
+        }
+        .animal-spawn.obtained span {
+          text-decoration: line-through;
+          color: #aaeaaa;
+        }
+
+        .animal-color-swatch {
+          border-radius: 50%;
+          border: 1px solid var(--border-color);
+          flex-shrink: 0;
+        }
+        .animal-spawn .animal-color-swatch { width: 24px; height: 24px; }
+        
         .Rare { background-color: rgba(102, 217, 239, 0.2); }
         .Legendary { background-color: rgba(249, 38, 114, 0.2); }
         .Golden { background-color: rgba(230, 219, 116, 0.2); }
@@ -335,7 +483,7 @@ const App = () => {
         .upcoming-list { list-style: none; padding: 0; margin: 0; }
         .upcoming-item { display: flex; align-items: center; gap: 10px; padding: 0.5rem 0; border-bottom: 1px solid var(--bg-tertiary); }
         .upcoming-item:last-child { border-bottom: none; }
-        .upcoming-item img { width: 32px; height: 32px; object-fit: contain; }
+        .upcoming-item .animal-color-swatch { width: 32px; height: 32px; }
         
         button, select {
           padding: 0.5rem 1rem;
@@ -357,6 +505,7 @@ const App = () => {
           justify-content: center;
           align-items: center;
           z-index: 1000;
+          animation: fadeIn 0.3s ease-out forwards;
         }
         .modal-content {
           background-color: var(--bg-secondary);
@@ -368,6 +517,7 @@ const App = () => {
           max-height: 90vh;
           overflow-y: auto;
           position: relative;
+          animation: scaleUp 0.3s ease-out forwards;
         }
         .modal-close {
           position: absolute;
@@ -377,24 +527,62 @@ const App = () => {
         }
         .settings-grid { display: grid; grid-template-columns: 1fr auto auto; gap: 1rem; align-items: center; }
         .settings-grid label { font-weight: bold; }
-        input[type="number"] {
-          width: 60px;
-          padding: 0.5rem;
+        .data-management-controls { display: flex; gap: 1rem; margin-bottom: 1rem; margin-top: 1rem;}
+        
+        .number-stepper {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .number-stepper input[type="number"] {
+          width: 50px;
+          padding: 0.5rem 0;
           background-color: var(--bg-tertiary);
           border: 1px solid var(--border-color);
           color: var(--text-color);
-          border-radius: 4px;
+          text-align: center;
+          border-left: none;
+          border-right: none;
+          border-radius: 0;
+          -moz-appearance: textfield;
         }
-        
+        .number-stepper input[type="number"]::-webkit-outer-spin-button,
+        .number-stepper input[type="number"]::-webkit-inner-spin-button {
+          -webkit-appearance: none;
+          margin: 0;
+        }
+        .stepper-btn {
+          width: 30px;
+          padding: 0.5rem 0;
+          font-size: 1rem;
+          line-height: 1;
+        }
+        .number-stepper .stepper-btn:first-of-type {
+          border-top-right-radius: 0;
+          border-bottom-right-radius: 0;
+        }
+        .number-stepper .stepper-btn:last-of-type {
+          border-top-left-radius: 0;
+          border-bottom-left-radius: 0;
+        }
+
         .animal-detail-modal { max-width: 400px; text-align: center; }
-        .animal-detail-modal img { max-width: 150px; margin: 1rem auto; display: block; }
+        .animal-detail-modal .animal-color-swatch { 
+            width: 150px;
+            height: 150px;
+            margin: 1rem auto;
+            display: block;
+            border-width: 2px;
+        }
         .animal-detail-modal h2 { margin: 0; }
+        .animal-detail-modal .obtained-btn { width: 100%; margin-top: 1.5rem; background-color: var(--bg-tertiary); }
+        .animal-detail-modal .obtained-btn.is-obtained { background-color: #3c8d3c; border-color: #2b6b2b; }
         .animal-rarity.Rare { color: var(--rare-color); }
         .animal-rarity.Legendary { color: var(--legendary-color); }
         .animal-rarity.Golden { color: var(--golden-color); }
         .req-list { list-style: none; padding: 0; margin-top: 1.5rem; text-align: left; }
         .req-item { margin-bottom: 0.5rem; }
-        .req-item.met { color: #8aff8a; }
+        .req-item.met { color: var(--success-color); }
         .req-item.not-met { color: #ff8a8a; }
       `}</style>
       
@@ -402,7 +590,22 @@ const App = () => {
         <div className="modal-overlay" onClick={() => setIsSettingsOpen(false)}>
           <div className="modal-content" onClick={e => e.stopPropagation()}>
             <button className="modal-close" onClick={() => setIsSettingsOpen(false)}>&times;</button>
-            <h2>Taming Progress</h2>
+            <h2>Settings</h2>
+            <hr/>
+            <h3>Data Management</h3>
+            <div className="data-management-controls">
+                <button onClick={handleExport}>Export Data</button>
+                <button onClick={() => importInputRef.current?.click()}>Import Data</button>
+                <input
+                    type="file"
+                    ref={importInputRef}
+                    style={{ display: 'none' }}
+                    accept=".json"
+                    onChange={handleImport}
+                />
+            </div>
+            <hr/>
+            <h3>Taming Progress</h3>
             <div className="settings-grid">
               <span></span>
               <label>Colors</label>
@@ -410,17 +613,13 @@ const App = () => {
               {ANIMAL_SPECIES.map(species => (
                 <React.Fragment key={species}>
                   <label>{species}</label>
-                  <input 
-                    type="number"
-                    min="0"
+                  <NumberStepper 
                     value={tamingProgress[species]?.colors || 0}
-                    onChange={(e) => setTamingProgress(p => ({...p, [species]: {...p[species], colors: parseInt(e.target.value) || 0}}))}
+                    onChange={(newValue) => setTamingProgress(p => ({...p, [species]: {...p[species], colors: newValue}}))}
                   />
-                  <input 
-                    type="number" 
-                    min="0"
+                  <NumberStepper
                     value={tamingProgress[species]?.total || 0}
-                    onChange={(e) => setTamingProgress(p => ({...p, [species]: {...p[species], total: parseInt(e.target.value) || 0}}))}
+                    onChange={(newValue) => setTamingProgress(p => ({...p, [species]: {...p[species], total: newValue}}))}
                   />
                 </React.Fragment>
               ))}
@@ -429,32 +628,52 @@ const App = () => {
         </div>
       )}
 
-      {selectedAnimal && (
-        <div className="modal-overlay" onClick={() => setSelectedAnimal(null)}>
-          <div className="modal-content animal-detail-modal" onClick={e => e.stopPropagation()}>
-            <button className="modal-close" onClick={() => setSelectedAnimal(null)}>&times;</button>
-            <img src={selectedAnimal.imageUrl} alt={selectedAnimal.name} />
-            <h2>{selectedAnimal.name}</h2>
-            <p className={`animal-rarity ${selectedAnimal.rarity}`}>{selectedAnimal.rarity}</p>
-            <p><strong>Location:</strong> {selectedAnimal.spawnLocation}</p>
-            
-            <h3>Unlock Requirements</h3>
-            <ul className="req-list">
-              <li className={tamingProgress[selectedAnimal.species]?.colors >= selectedAnimal.unlockReqs.colors ? 'met' : 'not-met'}>
-                {tamingProgress[selectedAnimal.species]?.colors >= selectedAnimal.unlockReqs.colors ? '✓' : '✗'} Tamed {selectedAnimal.unlockReqs.colors} different colors ({tamingProgress[selectedAnimal.species]?.colors || 0} / {selectedAnimal.unlockReqs.colors})
-              </li>
-              <li className={tamingProgress[selectedAnimal.species]?.total >= selectedAnimal.unlockReqs.total ? 'met' : 'not-met'}>
-                {tamingProgress[selectedAnimal.species]?.total >= selectedAnimal.unlockReqs.total ? '✓' : '✗'} Tamed {selectedAnimal.unlockReqs.total} total ({tamingProgress[selectedAnimal.species]?.total || 0} / {selectedAnimal.unlockReqs.total})
-              </li>
-               {selectedAnimal.minYear > 1 && (
-                 <li className={currentDate.year >= selectedAnimal.minYear ? 'met' : 'not-met'}>
-                  {currentDate.year >= selectedAnimal.minYear ? '✓' : '✗'} Must be Year {selectedAnimal.minYear} or later (Current: Year {currentDate.year})
+      {selectedAnimal && (() => {
+        const isObtained = obtainedAnimals.includes(selectedAnimal.name);
+
+        const handleToggleObtained = () => {
+          setObtainedAnimals(prev => {
+            if (isObtained) {
+              return prev.filter(name => name !== selectedAnimal.name);
+            } else {
+              return [...prev, selectedAnimal.name];
+            }
+          });
+        };
+
+        return (
+          <div className="modal-overlay" onClick={() => setSelectedAnimal(null)}>
+            <div className="modal-content animal-detail-modal" onClick={e => e.stopPropagation()}>
+              <button className="modal-close" onClick={() => setSelectedAnimal(null)}>&times;</button>
+              <AnimalColorSwatch animal={selectedAnimal} />
+              <h2>{selectedAnimal.name}</h2>
+              <p className={`animal-rarity ${selectedAnimal.rarity}`}>{selectedAnimal.rarity}</p>
+              <p><strong>Location:</strong> {selectedAnimal.spawnLocation}</p>
+              
+              <h3>Unlock Requirements</h3>
+              <ul className="req-list">
+                <li className={tamingProgress[selectedAnimal.species]?.colors >= selectedAnimal.unlockReqs.colors ? 'met' : 'not-met'}>
+                  {tamingProgress[selectedAnimal.species]?.colors >= selectedAnimal.unlockReqs.colors ? '✓' : '✗'} Tamed {selectedAnimal.unlockReqs.colors} different colors ({tamingProgress[selectedAnimal.species]?.colors || 0} / {selectedAnimal.unlockReqs.colors})
                 </li>
-               )}
-            </ul>
+                <li className={tamingProgress[selectedAnimal.species]?.total >= selectedAnimal.unlockReqs.total ? 'met' : 'not-met'}>
+                  {tamingProgress[selectedAnimal.species]?.total >= selectedAnimal.unlockReqs.total ? '✓' : '✗'} Tamed {selectedAnimal.unlockReqs.total} total ({tamingProgress[selectedAnimal.species]?.total || 0} / {selectedAnimal.unlockReqs.total})
+                </li>
+                 {selectedAnimal.minYear > 1 && (
+                   <li className={currentDate.year >= selectedAnimal.minYear ? 'met' : 'not-met'}>
+                    {currentDate.year >= selectedAnimal.minYear ? '✓' : '✗'} Must be Year {selectedAnimal.minYear} or later (Current: Year {currentDate.year})
+                  </li>
+                 )}
+              </ul>
+              <button 
+                className={`obtained-btn ${isObtained ? 'is-obtained' : ''}`}
+                onClick={handleToggleObtained}
+              >
+                {isObtained ? '✓ Obtained' : 'Mark as Obtained'}
+              </button>
+            </div>
           </div>
-        </div>
-      )}
+        )
+      })()}
 
       <header className="header">
         <h1>🐾 Pacha Tracker</h1>
@@ -497,19 +716,22 @@ const App = () => {
             {Array.from({ length: DAYS_IN_SEASON }, (_, i) => i + 1).map(day => (
               <div key={day} className={`day-cell ${day === currentDate.day ? 'current-day' : ''}`}>
                 <div className="day-number">{day}</div>
-                {filteredSpawns(day).map(animal => (
-                  <div 
-                    key={animal.name} 
-                    className={`animal-spawn ${animal.rarity} ${isUnlocked(animal) ? 'unlocked' : 'locked'}`}
-                    onClick={() => setSelectedAnimal(animal)}
-                    role="button"
-                    tabIndex="0"
-                    aria-label={`View details for ${animal.name}`}
-                  >
-                    <img src={animal.imageUrl} alt={animal.name} />
-                    <span>{animal.name}</span>
-                  </div>
-                ))}
+                {filteredSpawns(day).map(animal => {
+                  const isObtained = obtainedAnimals.includes(animal.name);
+                  return (
+                    <div 
+                      key={animal.name} 
+                      className={`animal-spawn ${animal.rarity} ${isUnlocked(animal) ? 'unlocked' : 'locked'} ${isObtained ? 'obtained' : ''}`}
+                      onClick={() => setSelectedAnimal({ ...animal, spawnDay: day })}
+                      role="button"
+                      tabIndex="0"
+                      aria-label={`View details for ${animal.name}`}
+                    >
+                      <AnimalColorSwatch animal={animal} />
+                      <span>{animal.name}</span>
+                    </div>
+                  )
+                })}
               </div>
             ))}
           </div>
@@ -520,8 +742,8 @@ const App = () => {
             <h3>Upcoming Spawns</h3>
             <ul className="upcoming-list">
               {upcomingSpawns.length > 0 ? upcomingSpawns.map((spawn, index) => (
-                <li key={index} className="upcoming-item">
-                   <img src={spawn.imageUrl} alt={spawn.name} />
+                <li key={index} className="upcoming-item" onClick={() => setSelectedAnimal(spawn)} style={{cursor:'pointer'}}>
+                   <AnimalColorSwatch animal={spawn} />
                    <div>
                     <strong>{spawn.name}</strong>
                     <div style={{fontSize: '0.8rem', color: 'var(--text-muted)'}}>{spawn.date.season}, Day {spawn.date.day}, Year {spawn.date.year}</div>
