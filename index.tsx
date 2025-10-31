@@ -36,8 +36,12 @@ const getAnimalStyle = (animalName) => {
       'Flame Aurochs': { background: 'linear-gradient(135deg, #FF4500, #FF8C00, #FFD700)' },
       // Bison
       'Golden Bison': { background: 'linear-gradient(135deg, #FFD700, #DAA520)' },
-      'Chicle Bison': { background: 'linear-gradient(135deg, #E6739F, #3D2B56)' }, // Updated: Pink/Purple
+      'Chicle Bison': { background: 'linear-gradient(135deg, #E6739F, #3D2B56)' },
       'Sky Cloud Bison': { background: 'linear-gradient(135deg, #87CEEB, #FFFFFF)' },
+      // Dodo
+      'Modern Dodo': { background: 'linear-gradient(135deg, #FFD700, #F0C400)' },
+      'Surreal Dodo': { background: 'linear-gradient(135deg, #87CEEB, #FF69B4)' },
+      'Pop Dodo': { background: 'linear-gradient(45deg, #F92672, #FD971F, #E6DB74, #A6E22E)' },
       // Guanaco
       'Golden Guanaco': { background: 'linear-gradient(135deg, #FFD700, #B8860B)' },
       'Fiery Guanaco': { background: 'linear-gradient(135deg, #B22222, #FF4500)' },
@@ -45,7 +49,7 @@ const getAnimalStyle = (animalName) => {
       // Horse
       'Golden Steppe Horse': { background: 'linear-gradient(135deg, #FFD700, #CD853F)' },
       'Cloudy Day Steppe Horse': { background: 'linear-gradient(135deg, #D3D3D3, #A9A9A9)' },
-      'Starry Night Steppe Horse': {  // Updated: Star pattern
+      'Starry Night Steppe Horse': {
          background: `
             radial-gradient(circle, #99d9f9 1px, rgba(0,0,0,0) 1px),
             radial-gradient(circle, #99d9f9 1px, rgba(0,0,0,0) 1px),
@@ -62,13 +66,17 @@ const getAnimalStyle = (animalName) => {
       'Golden Junglefowl': { background: 'linear-gradient(135deg, #FFD700, #FFBF00)' },
       'Amethyst Junglefowl': { background: 'linear-gradient(135deg, #9966CC, #8A2BE2)' },
       'Grand Turquoise Junglefowl': { background: 'linear-gradient(135deg, #40E0D0, #00CED1)' },
+      // Mouflon
+      'Zither Mouflon': { background: 'linear-gradient(135deg, #FFD700, #B8860B)' },
+      'Ukulele Mouflon': { background: 'linear-gradient(135deg, #FF7F50, #FF6347, #FF4500)' },
+      'Bass Mouflon': { background: 'linear-gradient(135deg, #483D8B, #000080)' },
       // Ostrich
       'Golden Ostrich': { background: 'linear-gradient(135deg, #FFD700, #F0E68C)' },
-      'Sapphire Ostrich': { background: 'linear-gradient(135deg, #20B2AA, #48D1CC)' }, // Updated: Brighter blue/turquoise
+      'Sapphire Ostrich': { background: 'linear-gradient(135deg, #20B2AA, #48D1CC)' },
       'Rainbow Ostrich': { background: 'linear-gradient(90deg, #FF0000, #FF7F00, #FFFF00, #00FF00, #0000FF, #4B0082, #8B00FF)' },
       // Wild Boar
       'Golden Wild Boar': { background: 'linear-gradient(135deg, #FFD700, #D2B48C)' },
-      'Fiber Wild Boar': { background: 'repeating-linear-gradient(45deg, #556B2F, #556B2F 10px, #6B8E23 10px, #6B8E23 20px)' }, // Updated: Green
+      'Fiber Wild Boar': { background: 'repeating-linear-gradient(45deg, #556B2F, #556B2F 10px, #6B8E23 10px, #6B8E23 20px)' },
       'Fire Wild Boar': { background: 'linear-gradient(135deg, #DC143C, #FF4500, #000000)' },
     };
     return styles[animalName] || { background: 'var(--bg-tertiary)' };
@@ -105,45 +113,52 @@ const NumberStepper = ({ value, onChange, min = 0 }) => {
   );
 };
 
+// === DATA (moved outside component for performance) ===
+const SEASONS = ['Spring', 'Summer', 'Fall', 'Winter'];
+const DAYS_IN_SEASON = 28;
+const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+const ANIMAL_SPECIES = ['Aurochs', 'Bison', 'Dodo', 'Guanaco', 'Horse', 'Ibex', 'Junglefowl', 'Mouflon', 'Ostrich', 'Wild Boar'].sort();
+
+const ANIMAL_DATA = [
+    { name: 'Golden Aurochs', species: 'Aurochs', rarity: 'Golden', seasons: ['Spring', 'Fall'], days: [7, 21], minYear: 1, spawnLocation: 'Savanna', unlockReqs: { colors: 4, total: 8 } },
+    { name: 'Snow Aurochs', species: 'Aurochs', rarity: 'Rare', seasons: ['Summer', 'Winter'], days: [14, 28], minYear: 1, spawnLocation: 'Savanna', unlockReqs: { colors: 4, total: 8 } },
+    { name: 'Flame Aurochs', species: 'Aurochs', rarity: 'Legendary', seasons: ['Summer', 'Winter'], days: [10], minYear: 2, spawnLocation: 'Savanna', unlockReqs: { colors: 6, total: 12 } },
+    { name: 'Golden Bison', species: 'Bison', rarity: 'Golden', seasons: ['Summer', 'Winter'], days: [3, 17], minYear: 1, spawnLocation: 'Savanna', unlockReqs: { colors: 4, total: 8 } },
+    { name: 'Chicle Bison', species: 'Bison', rarity: 'Rare', seasons: ['Spring', 'Fall'], days: [10, 24], minYear: 1, spawnLocation: 'Savanna', unlockReqs: { colors: 4, total: 8 } },
+    { name: 'Sky Cloud Bison', species: 'Bison', rarity: 'Legendary', seasons: ['Summer', 'Winter'], days: [22], minYear: 2, spawnLocation: 'Savanna', unlockReqs: { colors: 6, total: 12 } },
+    { name: 'Modern Dodo', species: 'Dodo', rarity: 'Golden', seasons: ['Spring', 'Fall'], days: [6, 20], minYear: 1, spawnLocation: 'Mangrove Island', unlockReqs: { colors: 4, total: 8 } },
+    { name: 'Surreal Dodo', species: 'Dodo', rarity: 'Rare', seasons: ['Summer', 'Winter'], days: [13, 27], minYear: 1, spawnLocation: 'Mangrove Island', unlockReqs: { colors: 4, total: 8 } },
+    { name: 'Pop Dodo', species: 'Dodo', rarity: 'Legendary', seasons: ['Spring', 'Fall'], days: [10], minYear: 2, spawnLocation: 'Mangrove Island', unlockReqs: { colors: 6, total: 12 } },
+    { name: 'Golden Guanaco', species: 'Guanaco', rarity: 'Golden', seasons: ['Summer', 'Winter'], days: [5, 19], minYear: 1, spawnLocation: 'Savanna', unlockReqs: { colors: 4, total: 8 } },
+    { name: 'Fiery Guanaco', species: 'Guanaco', rarity: 'Rare', seasons: ['Spring', 'Fall'], days: [12, 26], minYear: 1, spawnLocation: 'Savanna', unlockReqs: { colors: 4, total: 8 } },
+    { name: 'Icy Guanaco', species: 'Guanaco', rarity: 'Legendary', seasons: ['Spring', 'Fall'], days: [2], minYear: 2, spawnLocation: 'Savanna', unlockReqs: { colors: 6, total: 12 } },
+    { name: 'Golden Steppe Horse', species: 'Horse', rarity: 'Golden', seasons: ['Summer', 'Winter'], days: [7, 21], minYear: 1, spawnLocation: 'Caves', unlockReqs: { colors: 4, total: 8 } },
+    { name: 'Cloudy Day Steppe Horse', species: 'Horse', rarity: 'Rare', seasons: ['Spring', 'Fall'], days: [14, 28], minYear: 1, spawnLocation: 'Caves', unlockReqs: { colors: 4, total: 8 } },
+    { name: 'Starry Night Steppe Horse', species: 'Horse', rarity: 'Legendary', seasons: ['Spring', 'Fall'], days: [18], minYear: 2, spawnLocation: 'Caves', unlockReqs: { colors: 6, total: 12 } },
+    { name: 'Golden Ibex', species: 'Ibex', rarity: 'Golden', seasons: ['Spring', 'Fall'], days: [2, 16], minYear: 1, spawnLocation: 'Forest', unlockReqs: { colors: 4, total: 8 } },
+    { name: 'Shallow Waters Ibex', species: 'Ibex', rarity: 'Rare', seasons: ['Summer', 'Winter'], days: [9, 23], minYear: 1, spawnLocation: 'Forest', unlockReqs: { colors: 4, total: 8 } },
+    { name: 'Spider Ibex', species: 'Ibex', rarity: 'Legendary', seasons: ['Spring', 'Fall'], days: [26], minYear: 2, spawnLocation: 'Forest', unlockReqs: { colors: 6, total: 12 } },
+    { name: 'Golden Junglefowl', species: 'Junglefowl', rarity: 'Golden', seasons: ['Spring', 'Fall'], days: [6, 20], minYear: 1, spawnLocation: 'Jungle', unlockReqs: { colors: 4, total: 8 } },
+    { name: 'Amethyst Junglefowl', species: 'Junglefowl', rarity: 'Rare', seasons: ['Summer', 'Winter'], days: [13, 27], minYear: 1, spawnLocation: 'Jungle', unlockReqs: { colors: 4, total: 8 } },
+    { name: 'Grand Turquoise Junglefowl', species: 'Junglefowl', rarity: 'Legendary', seasons: ['Spring', 'Fall'], days: [10], minYear: 2, spawnLocation: 'Jungle', unlockReqs: { colors: 6, total: 12 } },
+    { name: 'Zither Mouflon', species: 'Mouflon', rarity: 'Golden', seasons: ['Spring', 'Fall'], days: [2, 16], minYear: 1, spawnLocation: 'Mograni Tundra', unlockReqs: { colors: 4, total: 8 } },
+    { name: 'Ukulele Mouflon', species: 'Mouflon', rarity: 'Rare', seasons: ['Summer', 'Winter'], days: [9, 23], minYear: 1, spawnLocation: 'Mograni Tundra', unlockReqs: { colors: 4, total: 8 } },
+    { name: 'Bass Mouflon', species: 'Mouflon', rarity: 'Legendary', seasons: ['Spring', 'Fall'], days: [26], minYear: 2, spawnLocation: 'Mograni Tundra', unlockReqs: { colors: 6, total: 12 } },
+    { name: 'Golden Ostrich', species: 'Ostrich', rarity: 'Golden', seasons: ['Spring', 'Fall'], days: [4, 18], minYear: 1, spawnLocation: 'Savanna', unlockReqs: { colors: 4, total: 8 } },
+    { name: 'Sapphire Ostrich', species: 'Ostrich', rarity: 'Rare', seasons: ['Summer', 'Winter'], days: [11, 25], minYear: 1, spawnLocation: 'Savanna', unlockReqs: { colors: 4, total: 8 } },
+    { name: 'Rainbow Ostrich', species: 'Ostrich', rarity: 'Legendary', seasons: ['Summer', 'Winter'], days: [14], minYear: 2, spawnLocation: 'Savanna', unlockReqs: { colors: 6, total: 12 } },
+    { name: 'Golden Wild Boar', species: 'Wild Boar', rarity: 'Golden', seasons: ['Summer', 'Winter'], days: [1, 15], minYear: 1, spawnLocation: 'Forest', unlockReqs: { colors: 4, total: 8 } },
+    { name: 'Fiber Wild Boar', species: 'Wild Boar', rarity: 'Rare', seasons: ['Spring', 'Fall'], days: [8, 22], minYear: 1, spawnLocation: 'Forest', unlockReqs: { colors: 4, total: 8 } },
+    { name: 'Fire Wild Boar', species: 'Wild Boar', rarity: 'Legendary', seasons: ['Summer', 'Winter'], days: [6], minYear: 2, spawnLocation: 'Forest', unlockReqs: { colors: 6, total: 12 } },
+].sort((a, b) => a.species.localeCompare(b.species) || a.name.localeCompare(b.name));
+  
+const initialProgress = ANIMAL_SPECIES.reduce((acc, species) => {
+  acc[species] = { colors: 0, total: 0 };
+  return acc;
+}, {});
+
 const App = () => {
-  // === DATA ===
-  const SEASONS = ['Spring', 'Summer', 'Fall', 'Winter'];
-  const DAYS_IN_SEASON = 28;
-
-  const ANIMAL_SPECIES = ['Aurochs', 'Bison', 'Guanaco', 'Horse', 'Ibex', 'Junglefowl', 'Ostrich', 'Wild Boar'];
-  
-  const ANIMAL_DATA = [
-      { name: 'Golden Aurochs', species: 'Aurochs', rarity: 'Golden', seasons: ['Spring', 'Fall'], days: [7, 21], minYear: 1, spawnLocation: 'Savanna', unlockReqs: { colors: 4, total: 8 } },
-      { name: 'Snow Aurochs', species: 'Aurochs', rarity: 'Rare', seasons: ['Summer', 'Winter'], days: [14, 28], minYear: 1, spawnLocation: 'Savanna', unlockReqs: { colors: 4, total: 8 } },
-      { name: 'Flame Aurochs', species: 'Aurochs', rarity: 'Legendary', seasons: ['Summer', 'Winter'], days: [10], minYear: 2, spawnLocation: 'Savanna', unlockReqs: { colors: 6, total: 12 } },
-      { name: 'Golden Bison', species: 'Bison', rarity: 'Golden', seasons: ['Summer', 'Winter'], days: [3, 17], minYear: 1, spawnLocation: 'Savanna', unlockReqs: { colors: 4, total: 8 } },
-      { name: 'Chicle Bison', species: 'Bison', rarity: 'Rare', seasons: ['Spring', 'Fall'], days: [10, 24], minYear: 1, spawnLocation: 'Savanna', unlockReqs: { colors: 4, total: 8 } },
-      { name: 'Sky Cloud Bison', species: 'Bison', rarity: 'Legendary', seasons: ['Summer', 'Winter'], days: [22], minYear: 2, spawnLocation: 'Savanna', unlockReqs: { colors: 6, total: 12 } },
-      { name: 'Golden Guanaco', species: 'Guanaco', rarity: 'Golden', seasons: ['Summer', 'Winter'], days: [5, 19], minYear: 1, spawnLocation: 'Savanna', unlockReqs: { colors: 4, total: 8 } },
-      { name: 'Fiery Guanaco', species: 'Guanaco', rarity: 'Rare', seasons: ['Spring', 'Fall'], days: [12, 26], minYear: 1, spawnLocation: 'Savanna', unlockReqs: { colors: 4, total: 8 } },
-      { name: 'Icy Guanaco', species: 'Guanaco', rarity: 'Legendary', seasons: ['Spring', 'Fall'], days: [2], minYear: 2, spawnLocation: 'Savanna', unlockReqs: { colors: 6, total: 12 } },
-      { name: 'Golden Steppe Horse', species: 'Horse', rarity: 'Golden', seasons: ['Summer', 'Winter'], days: [7, 21], minYear: 1, spawnLocation: 'Caves', unlockReqs: { colors: 4, total: 8 } },
-      { name: 'Cloudy Day Steppe Horse', species: 'Horse', rarity: 'Rare', seasons: ['Spring', 'Fall'], days: [14, 28], minYear: 1, spawnLocation: 'Caves', unlockReqs: { colors: 4, total: 8 } },
-      { name: 'Starry Night Steppe Horse', species: 'Horse', rarity: 'Legendary', seasons: ['Spring', 'Fall'], days: [18], minYear: 2, spawnLocation: 'Caves', unlockReqs: { colors: 6, total: 12 } },
-      { name: 'Golden Ibex', species: 'Ibex', rarity: 'Golden', seasons: ['Spring', 'Fall'], days: [2, 16], minYear: 1, spawnLocation: 'Forest', unlockReqs: { colors: 4, total: 8 } },
-      { name: 'Shallow Waters Ibex', species: 'Ibex', rarity: 'Rare', seasons: ['Summer', 'Winter'], days: [9, 23], minYear: 1, spawnLocation: 'Forest', unlockReqs: { colors: 4, total: 8 } },
-      { name: 'Spider Ibex', species: 'Ibex', rarity: 'Legendary', seasons: ['Spring', 'Fall'], days: [26], minYear: 2, spawnLocation: 'Forest', unlockReqs: { colors: 6, total: 12 } },
-      { name: 'Golden Junglefowl', species: 'Junglefowl', rarity: 'Golden', seasons: ['Spring', 'Fall'], days: [6, 20], minYear: 1, spawnLocation: 'Jungle', unlockReqs: { colors: 4, total: 8 } },
-      { name: 'Amethyst Junglefowl', species: 'Junglefowl', rarity: 'Rare', seasons: ['Summer', 'Winter'], days: [13, 27], minYear: 1, spawnLocation: 'Jungle', unlockReqs: { colors: 4, total: 8 } },
-      { name: 'Grand Turquoise Junglefowl', species: 'Junglefowl', rarity: 'Legendary', seasons: ['Spring', 'Fall'], days: [10], minYear: 2, spawnLocation: 'Jungle', unlockReqs: { colors: 6, total: 12 } },
-      { name: 'Golden Ostrich', species: 'Ostrich', rarity: 'Golden', seasons: ['Spring', 'Fall'], days: [4, 18], minYear: 1, spawnLocation: 'Savanna', unlockReqs: { colors: 4, total: 8 } },
-      { name: 'Sapphire Ostrich', species: 'Ostrich', rarity: 'Rare', seasons: ['Summer', 'Winter'], days: [11, 25], minYear: 1, spawnLocation: 'Savanna', unlockReqs: { colors: 4, total: 8 } },
-      { name: 'Rainbow Ostrich', species: 'Ostrich', rarity: 'Legendary', seasons: ['Summer', 'Winter'], days: [14], minYear: 2, spawnLocation: 'Savanna', unlockReqs: { colors: 6, total: 12 } },
-      { name: 'Golden Wild Boar', species: 'Wild Boar', rarity: 'Golden', seasons: ['Summer', 'Winter'], days: [1, 15], minYear: 1, spawnLocation: 'Forest', unlockReqs: { colors: 4, total: 8 } },
-      { name: 'Fiber Wild Boar', species: 'Wild Boar', rarity: 'Rare', seasons: ['Spring', 'Fall'], days: [8, 22], minYear: 1, spawnLocation: 'Forest', unlockReqs: { colors: 4, total: 8 } },
-      { name: 'Fire Wild Boar', species: 'Wild Boar', rarity: 'Legendary', seasons: ['Summer', 'Winter'], days: [6], minYear: 2, spawnLocation: 'Forest', unlockReqs: { colors: 6, total: 12 } },
-  ];
-  
-  const initialProgress = ANIMAL_SPECIES.reduce((acc, species) => {
-    acc[species] = { colors: 0, total: 0 };
-    return acc;
-  }, {});
-
   // === STATE ===
   const [currentDate, setCurrentDate] = useLocalStorage('pacha_currentDate', { year: 1, seasonIndex: 0, day: 1 });
   const [tamingProgress, setTamingProgress] = useLocalStorage('pacha_tamingProgress', initialProgress);
@@ -159,6 +174,14 @@ const App = () => {
   const importInputRef = useRef(null);
 
   // === LOGIC ===
+  // Effect to ensure save compatibility with new animal species
+  useEffect(() => {
+    const allSpeciesPresent = ANIMAL_SPECIES.every(species => tamingProgress.hasOwnProperty(species));
+    if (!allSpeciesPresent) {
+      setTamingProgress(prev => ({ ...initialProgress, ...prev }));
+    }
+  }, []);
+
   const isUnlocked = (animal) => {
     const progress = tamingProgress[animal.species];
     if (!progress) return false;
@@ -312,10 +335,10 @@ const App = () => {
               throw new Error('File content is not a string');
             }
             const importedData = JSON.parse(e.target.result);
-            // Updated to check for obtainedAnimals
             if (importedData.currentDate && importedData.tamingProgress && Array.isArray(importedData.obtainedAnimals)) {
                 setCurrentDate(importedData.currentDate);
-                setTamingProgress(importedData.tamingProgress);
+                // Merge with initial progress to handle newly added species
+                setTamingProgress(prev => ({...initialProgress, ...importedData.tamingProgress}));
                 setObtainedAnimals(importedData.obtainedAnimals);
                 alert('Data imported successfully!');
                 setIsSettingsOpen(false);
@@ -420,6 +443,12 @@ const App = () => {
           grid-template-columns: repeat(7, 1fr);
           gap: 5px;
         }
+        .weekday-header {
+            font-weight: 700;
+            text-align: center;
+            color: var(--text-muted);
+            padding-bottom: 0.5rem;
+        }
         .day-cell {
           background-color: var(--bg-secondary);
           border-radius: 6px;
@@ -458,7 +487,8 @@ const App = () => {
         }
         .animal-spawn.obtained span {
           text-decoration: line-through;
-          color: #aaeaaa;
+          text-decoration-color: #c58af9;
+          text-decoration-thickness: 2px;
         }
 
         .animal-color-swatch {
@@ -713,6 +743,7 @@ const App = () => {
             </div>
           </div>
           <div className="calendar-grid">
+            {WEEKDAYS.map(day => <div key={day} className="weekday-header">{day}</div>)}
             {Array.from({ length: DAYS_IN_SEASON }, (_, i) => i + 1).map(day => (
               <div key={day} className={`day-cell ${day === currentDate.day ? 'current-day' : ''}`}>
                 <div className="day-number">{day}</div>
